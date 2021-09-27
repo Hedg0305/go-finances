@@ -1,9 +1,9 @@
-import React from 'react'
-import { getBottomSpace } from 'react-native-iphone-x-helper'
+import React, { useState, useEffect } from 'react'
 import HighlightCard from '../../components/HighlightCard'
 import TransactionCard, {
   TransactionCardProps,
 } from '../../components/TransactionCard'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import {
   Container,
@@ -27,32 +27,40 @@ export interface DataListProps extends TransactionCardProps {
 }
 
 export default function Dashboard() {
-  const data: DataListProps[] = [
-    {
-      id: '1',
-      amount: 'R$ 16.000',
-      title: 'Desenvolvimento de site',
-      category: { name: 'vendas', icon: 'dollar-sign' },
-      date: '13/04/2020',
-      type: 'positive',
-    },
-    {
-      id: '2',
-      amount: 'R$ 59,00',
-      title: 'Hamburger pix',
-      category: { name: 'Alimentação', icon: 'coffee' },
-      date: '13/04/2020',
-      type: 'negative',
-    },
-    {
-      id: '3',
-      amount: 'R$ 1.200,00',
-      title: 'Aluguel do apartamento',
-      category: { name: 'Casa', icon: 'shopping-bag' },
-      date: '13/04/2020',
-      type: 'negative',
-    },
-  ]
+  const [data, setData] = useState<DataListProps[]>([])
+
+  const loadTransactions = async () => {
+    const dataKey = '@gofinance:transactions'
+    const response = await AsyncStorage.getItem(dataKey)
+    const transactions = response ? JSON.parse(response) : []
+
+    const transactionsFromatted: DataListProps[] = transactions.map(
+      (transaction: DataListProps) => {
+        const amount = Number(transaction.amount).toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+        })
+        const date = Intl.DateTimeFormat('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: '2-digit',
+        }).format(new Date(transaction.date))
+
+        return {
+          id: transaction.id,
+          title: transaction.title,
+          amount,
+          type: transaction.type,
+          category: transaction.category,
+          date,
+        }
+      }
+    )
+  }
+
+  useEffect(() => {
+    loadTransactions
+  }, [])
 
   return (
     <Container>
