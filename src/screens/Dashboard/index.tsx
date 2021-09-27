@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import HighlightCard from '../../components/HighlightCard'
 import TransactionCard, {
   TransactionCardProps,
@@ -21,6 +21,7 @@ import {
   TransactionList,
   LogoutButton,
 } from './styles'
+import { useFocusEffect } from '@react-navigation/core'
 
 export interface DataListProps extends TransactionCardProps {
   id: string
@@ -48,7 +49,7 @@ export default function Dashboard() {
 
         return {
           id: transaction.id,
-          title: transaction.title,
+          name: transaction.name,
           amount,
           type: transaction.type,
           category: transaction.category,
@@ -56,11 +57,19 @@ export default function Dashboard() {
         }
       }
     )
+
+    setData(transactionsFromatted)
   }
 
   useEffect(() => {
-    loadTransactions
+    loadTransactions()
   }, [])
+
+  useFocusEffect(
+    useCallback(() => {
+      loadTransactions()
+    }, [])
+  )
 
   return (
     <Container>
