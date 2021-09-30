@@ -26,7 +26,7 @@ import {
 } from './styles'
 import { useFocusEffect } from '@react-navigation/core'
 import { useTheme } from 'styled-components'
-import { LastTransaction } from '../../components/HighlightCard/styles'
+import { useAuth } from '../../hooks/auth'
 
 interface HighlightProps {
   amount: string
@@ -43,6 +43,8 @@ export interface DataListProps extends TransactionCardProps {
 }
 
 export default function Dashboard() {
+  const { signOut, user } = useAuth()
+
   const [isLoading, setIsLoading] = useState(true)
   const [transactions, setTransactions] = useState<DataListProps[]>([])
   const [highlightdata, setHighlightData] = useState({} as Highlightdata)
@@ -50,6 +52,7 @@ export default function Dashboard() {
   const loadTransactions = async () => {
     const dataKey = '@gofinance:transactions'
     const response = await AsyncStorage.getItem(dataKey)
+
     const transactions = response ? JSON.parse(response) : []
 
     let entriesTotal = 0
@@ -59,19 +62,19 @@ export default function Dashboard() {
       collection: DataListProps[],
       type: 'positive' | 'negative'
     ) => {
-      const lastTransactionEntrie = Math.max.apply(
-        Math,
-        collection
-          .filter((transaction: DataListProps) => transaction.type === type)
-          .map((transaction: DataListProps) =>
-            new Date(transaction.date).getTime()
-          )
+      const lastTransaction = new Date(
+        Math.max.apply(
+          Math,
+          collection
+            .filter((transaction) => transaction.type === type)
+            .map((transaction) => new Date(transaction.date).getTime())
+        )
       )
 
-      return Intl.DateTimeFormat('pt-BR', {
-        day: '2-digit',
-        month: 'long',
-      }).format(new Date(lastTransactionEntrie))
+      return `${lastTransaction.getDate()} de ${lastTransaction.toLocaleString(
+        'pt-BR',
+        { month: 'long' }
+      )}`
     }
 
     const transactionsFromatted: DataListProps[] = transactions.map(
@@ -164,14 +167,14 @@ export default function Dashboard() {
           <Header>
             <UserWrapper>
               <UserInfo>
-                <Photo source={{ uri: 'https://github.com/Hedg0305.png' }} />
+                <Photo source={{ uri: user.photo }} />
                 <User>
                   <UserGreeting>Olá,</UserGreeting>
-                  <UserName>Rodrigo</UserName>
+                  <UserName>{user.name}</UserName>
                 </User>
               </UserInfo>
 
-              <LogoutButton onPress={() => {}}>
+              <LogoutButton onPress={signOut}>
                 <Icon name='power' />
               </LogoutButton>
             </UserWrapper>
