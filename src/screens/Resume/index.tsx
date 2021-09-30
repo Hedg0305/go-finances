@@ -23,6 +23,7 @@ import { RFValue } from 'react-native-responsive-fontsize'
 import { useTheme } from 'styled-components'
 import { ActivityIndicator } from 'react-native'
 import { useFocusEffect } from '@react-navigation/native'
+import { useAuth } from '../../hooks/auth'
 
 interface TransactionData {
   type: 'positive' | 'negative'
@@ -45,6 +46,7 @@ const Resume = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [totalByCategories, setTotalByCategories] = useState<CategoryData[]>([])
+  const { user } = useAuth()
 
   const handleDateChange = (action: 'next' | 'previous') => {
     if (action === 'next') {
@@ -57,7 +59,7 @@ const Resume = () => {
   const loadData = async () => {
     setIsLoading(true)
 
-    const dataKey = '@gofinance:transactions'
+    const dataKey = `@gofinance:transactions_user:${user.id}`
     const response = await AsyncStorage.getItem(dataKey)
     const responseFormatted = response ? JSON.parse(response) : []
 

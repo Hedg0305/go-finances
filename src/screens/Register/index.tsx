@@ -22,6 +22,7 @@ import {
   TransactionTypes,
 } from './styles'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useAuth } from '../../hooks/auth'
 
 interface FormData {
   name: string
@@ -49,6 +50,8 @@ const Register = () => {
     key: 'category',
     name: 'Categoria',
   })
+  const { user } = useAuth()
+
   const navigation = useNavigation<NavigationProps>()
 
   const {
@@ -71,7 +74,7 @@ const Register = () => {
   }
 
   const handleRegister = async (form: FormData) => {
-    const dataKey = '@gofinance:transactions'
+    const dataKey = `@gofinance:transactions_user:${user.id}`
 
     if (!transactionType) return Alert.alert('Selecione o tipo da transação')
 
